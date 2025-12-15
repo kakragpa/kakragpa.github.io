@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPA Calculator</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-primary: #111111;
+            --text-secondary: #888888;
+            --border-color: #eeeeee;
+            --input-bg: #f9f9f9;
+            --accent-color: #000000;
+            --danger-color: #ff4444;
+            --card-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            --hover-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            --blue-border: #81D4FA;
+            --blue-bg: #E1F5FE;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding-bottom: 80px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .lang-btn {
+            background: var(--input-bg);
+            border: 1px solid transparent;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .lang-btn:hover {
+            background: #f0f0f0;
+            transform: translateY(-1px);
+        }
+
+        .gpa-card {
+            background: var(--text-primary);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 40px;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .gpa-card:hover { transform: scale(1.02); }
+
+        .gpa-label {
+            font-size: 13px;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .gpa-value {
+            font-size: 56px;
+            font-weight: 800;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .grid-header {
+            display: grid;
+            grid-template-columns: 3fr 1fr 1fr 40px;
+            gap: 15px;
+            padding: 0 15px;
+            margin-bottom: 15px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .subject-row {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 10px 15px;
+            margin-bottom: 12px;
+            display: grid;
+            grid-template-columns: 3fr 1fr 1fr 40px;
+            gap: 15px;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .subject-row.extra-subject {
+            border: 2px solid var(--blue-border);
+            background-color: var(--blue-bg);
+        }
+        
+        .subject-row.extra-subject input {
+            background-color: #ffffff;
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        .slide-in {
+            animation: slideUpFade 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .subject-row:focus-within {
+            border-color: var(--accent-color);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .subject-row.extra-subject:focus-within {
+            border-color: #29B6F6;
+            box-shadow: 0 4px 15px rgba(129, 212, 250, 0.4);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            background: var(--input-bg);
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-primary);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        input:focus {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transform: scale(1.02);
+        }
+
+        .input-name { font-weight: 600; }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            font-size: 22px;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.2;
+            transition: all 0.2s ease;
+        }
+
+        .remove-btn:hover { 
+            opacity: 1; 
+            transform: rotate(90deg);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.1s, box-shadow 0.2s;
+        }
+        
+        .btn:active { transform: scale(0.97); }
+
+        .btn-primary {
+            background-color: var(--text-primary);
+            color: white;
+        }
+
+        .btn-outline {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .stats-footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .breakdown-section {
+            margin-top: 20px;
+        }
+        
+        .breakdown-title {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+        }
+
+        .breakdown-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .grade-box {
+            background: var(--input-bg);
+            border: 1px solid transparent;
+            border-radius: 12px;
+            padding: 12px 5px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .grade-box.active {
+            background: white;
+            border-color: var(--border-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .gb-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .gb-count {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            opacity: 0.3;
+        }
+        
+        .grade-box.active .gb-count {
+            opacity: 1;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-box {
+            background: white;
+            width: 90%;
+            max-width: 320px;
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal-overlay.active .modal-box { transform: scale(1); }
+
+        .modal-title { margin: 0 0 10px 0; font-size: 18px; font-weight: 700; }
+        .modal-text { margin: 0 0 25px 0; color: var(--text-secondary); font-size: 14px; line-height: 1.5; }
+        .modal-actions { display: flex; gap: 10px; }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+        .modal-btn-cancel { background: var(--input-bg); color: var(--text-primary); }
+        .modal-btn-confirm { background: var(--text-primary); color: white; }
+
+        @media (max-width: 600px) {
+            .grid-header { display: none; }
+            .subject-row {
+                grid-template-columns: 1fr 1fr 40px; 
+                grid-template-rows: auto auto;
+                gap: 10px;
+                padding: 15px;
+            }
+            .input-name { grid-column: 1 / -1; font-size: 16px; background: transparent; padding: 0 0 8px 0; border-radius: 0; }
+            .remove-btn { grid-column: 3; grid-row: 2; height: 100%; }
+            h1 { font-size: 18px; }
+            .gpa-value { font-size: 48px; }
+            .breakdown-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1 id="app-title">GPA Calculator</h1>
+            <button class="lang-btn" onclick="toggleLanguage()" id="lang-toggle">TH</button>
+        </header>
+
+        <div class="gpa-card">
+            <span class="gpa-label" id="lbl-gpa">Current GPA</span>
+            <span class="gpa-value" id="final-gpa">0.00</span>
+        </div>
+
+        <div class="grid-header">
+            <span id="lbl-subject">Subject</span>
+            <span id="lbl-credit">Credit</span>
+            <span id="lbl-grade">Grade</span>
+            <span></span>
+        </div>
+
+        <div id="course-list"></div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="addSubjectWithAnimation()" id="btn-add">+ Add Subject</button>
+            <button class="btn btn-outline" onclick="openResetModal()" id="btn-reset">Reset</button>
+        </div>
+
+        <div class="stats-footer">
+            <span id="lbl-total-credits">Total Credits: <strong id="total-credits">0</strong></span>
+            <span id="lbl-total-points">Total Points: <strong id="total-points">0</strong></span>
+        </div>
+
+        <div class="breakdown-section">
+            <div class="breakdown-title" id="lbl-breakdown">Grade Distribution</div>
+            <div class="breakdown-grid">
+                <div class="grade-box" id="box-4"><span class="gb-label">4 (A)</span><span class="gb-count" id="count-4">0</span></div>
+                <div class="grade-box" id="box-3-5"><span class="gb-label">3.5 (B+)</span><span class="gb-count" id="count-3-5">0</span></div>
+                <div class="grade-box" id="box-3"><span class="gb-label">3 (B)</span><span class="gb-count" id="count-3">0</span></div>
+                <div class="grade-box" id="box-2-5"><span class="gb-label">2.5 (C+)</span><span class="gb-count" id="count-2-5">0</span></div>
+                <div class="grade-box" id="box-2"><span class="gb-label">2 (C)</span><span class="gb-count" id="count-2">0</span></div>
+                <div class="grade-box" id="box-1-5"><span class="gb-label">1.5 (D+)</span><span class="gb-count" id="count-1-5">0</span></div>
+                <div class="grade-box" id="box-1"><span class="gb-label">1 (D)</span><span class="gb-count" id="count-1">0</span></div>
+                <div class="grade-box" id="box-0"><span class="gb-label">0 (F)</span><span class="gb-count" id="count-0">0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="reset-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h3 class="modal-title" id="modal-title">Reset?</h3>
+            <p class="modal-text" id="modal-desc">This will clear all your inputs.</p>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" onclick="closeModal()" id="modal-cancel">Cancel</button>
+                <button class="modal-btn modal-btn-confirm" onclick="confirmReset()" id="modal-confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const i18n = {
+            en: {
+                title: "GPA Calculator",
+                gpaLbl: "Current GPA",
+                subject: "Subject",
+                credit: "Credit",
+                grade: "Grade",
+                addBtn: "+ Add Subject",
+                resetBtn: "Reset",
+                totalCredits: "Total Credits: ",
+                totalPoints: "Total Points: ",
+                placeholderSub: "Subject Name",
+                placeholderGrade: "4.0",
+                extraSubName: "Additional Subject",
+                modalTitle: "Reset Data?",
+                modalDesc: "This will delete all your current grades and restore the default subjects. Are you sure?",
+                modalCancel: "Cancel",
+                modalConfirm: "Yes, Reset",
+                breakdownTitle: "Grade Distribution"
+            },
+            th: {
+                title: "คำนวณเกรดเฉลี่ย",
+                gpaLbl: "เกรดเฉลี่ยสะสม (GPA)",
+                subject: "ชื่อวิชา",
+                credit: "หน่วยกิต",
+                grade: "เกรด",
+                addBtn: "+ เพิ่มวิชา",
+                resetBtn: "รีเซ็ต",
+                totalCredits: "หน่วยกิตรวม: ",
+                totalPoints: "คะแนนรวม: ",
+                placeholderSub: "ชื่อวิชา...",
+                placeholderGrade: "4",
+                extraSubName: "วิชาเพิ่มเติม",
+                modalTitle: "รีเซ็ตข้อมูล?",
+                modalDesc: "ระบบจะลบเกรดที่คุณกรอกทั้งหมด และกลับไปใช้รายวิชาเริ่มต้น คุณแน่ใจหรือไม่?",
+                modalCancel: "ยกเลิก",
+                modalConfirm: "ยืนยัน",
+                breakdownTitle: "สรุปจำนวนเกรด"
+            }
+        };
+
+        let currentLang = 'th'; 
+
+        const defaultSubjects = [
+            { name: "ท22101 ภาษาไทย 3", credit: 1.5 },
+            { name: "ค22101 คณิตศาสตร์ 3", credit: 1.5 },
+            { name: "ว22101 วิทยาศาสตร์ 3", credit: 1.0 },
+            { name: "ว22103 วิทยาการคำนวณ 2", credit: 1.0 },
+            { name: "ว22104 การออกแบบและเทคโนโลยี 2", credit: 0.5 },
+            { name: "ส22101 สังคมศึกษา ฯ 3", credit: 1.5 },
+            { name: "ส22102 ประวัติศาสตร์ 3", credit: 0.5 },
+            { name: "พ22101 สุขศึกษาและพลศึกษา 3", credit: 1.0 },
+            { name: "ศ22101 ศิลปะ 3", credit: 1.0 },
+            { name: "ง22101 การงานอาชีพ 3", credit: 0.5 },
+            { name: "อ22101 ภาษาอังกฤษ 3", credit: 1.5 },
+            { name: "ส20233 ต้านทุจริตศึกษา 3", credit: 0.5 },
+            { name: "จ22203 เสริมทักษะภาษาจีน 3", credit: 0.5 },
+            { name: "I20201 การศึกษาค้นคว้าฯ", credit: 1.0 }
+        ];
+
+        const courseList = document.getElementById('course-list');
+        let currentDisplayedGPA = 0;
+        let targetGPA = 0;
+        let animationFrameId;
+
+        window.onload = () => {
+            updateLanguageUI();
+            loadDefaults();
+        };
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'th' : 'en';
+            document.getElementById('lang-toggle').textContent = currentLang === 'en' ? 'TH' : 'EN';
+            updateLanguageUI();
+        }
+
+        function updateLanguageUI() {
+            const t = i18n[currentLang];
+            document.getElementById('app-title').textContent = t.title;
+            document.getElementById('lbl-gpa').textContent = t.gpaLbl;
+            document.getElementById('lbl-subject').textContent = t.subject;
+            document.getElementById('lbl-credit').textContent = t.credit;
+            document.getElementById('lbl-grade').textContent = t.grade;
+            document.getElementById('btn-add').textContent = t.addBtn;
+            document.getElementById('btn-reset').textContent = t.resetBtn;
+            
+            document.getElementById('modal-title').textContent = t.modalTitle;
+            document.getElementById('modal-desc').textContent = t.modalDesc;
+            document.getElementById('modal-cancel').textContent = t.modalCancel;
+            document.getElementById('modal-confirm').textContent = t.modalConfirm;
+            document.getElementById('lbl-breakdown').textContent = t.breakdownTitle;
+
+            document.querySelectorAll('.subject-row:not(.extra-subject) .input-name').forEach(i => i.placeholder = t.placeholderSub);
+            document.querySelectorAll('.input-grade').forEach(i => i.placeholder = t.placeholderGrade);
+            
+            calculateGPA(); 
+        }
+
+        function loadDefaults() {
+            courseList.innerHTML = '';
+            defaultSubjects.forEach((sub, index) => {
+                setTimeout(() => {
+                    addSubject(sub.name, sub.credit, false);
+                }, index * 40);
+            });
+            const t = i18n[currentLang];
+            setTimeout(() => { addSubject(t.extraSubName, "", true); }, defaultSubjects.length * 40 + 50);
+            setTimeout(() => { addSubject(t.extraSubName, "", true); }, defaultSubjects.length * 40 + 100);
+        }
+
+        function addSubjectWithAnimation() {
+            addSubject();
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        function addSubject(name = '', credit = '', isExtra = false) {
+            const t = i18n[currentLang];
+            const div = document.createElement('div');
+            div.className = 'subject-row slide-in'; 
+            if(isExtra) div.classList.add('extra-subject');
+
+            div.innerHTML = `
+                <input type="text" value="${name}" placeholder="${t.placeholderSub}" class="input-name">
+                <input type="number" value="${credit}" placeholder="Cr" inputmode="decimal" step="0.5" class="input-credit" oninput="calculateGPA()">
+                <input type="number" placeholder="${t.placeholderGrade}" inputmode="decimal" step="0.5" class="input-grade" oninput="calculateGPA()">
+                <button class="remove-btn" onclick="removeRow(this)">×</button>
+            `;
+            courseList.appendChild(div);
+        }
+
+        function removeRow(btn) {
+            const row = btn.parentElement;
+            row.style.opacity = '0';
+            row.style.transform = 'translateY(-10px)';
+            setTimeout(() => {
+                row.remove();
+                calculateGPA();
+            }, 300);
+        }
+
+        function openResetModal() { document.getElementById('reset-modal').classList.add('active'); }
+        function closeModal() { document.getElementById('reset-modal').classList.remove('active'); }
+        function confirmReset() {
+            currentDisplayedGPA = 0;
+            document.getElementById('final-gpa').textContent = "0.00";
+            loadDefaults();
+            closeModal();
+        }
+        document.getElementById('reset-modal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+        function calculateGPA() {
+            let totalCredits = 0;
+            let totalPoints = 0;
+            
+            let counts = {
+                "4": 0, "3.5": 0, "3": 0, "2.5": 0, 
+                "2": 0, "1.5": 0, "1": 0, "0": 0
+            };
+
+            const rows = document.querySelectorAll('.subject-row');
+
+            rows.forEach(row => {
+                const creditVal = parseFloat(row.querySelector('.input-credit').value);
+                const gradeVal = parseFloat(row.querySelector('.input-grade').value);
+
+                if (!isNaN(creditVal) && !isNaN(gradeVal)) {
+                    totalCredits += creditVal;
+                    totalPoints += (creditVal * gradeVal);
+                    
+                    let key = gradeVal.toString();
+                    if(counts[key] !== undefined) {
+                        counts[key]++;
+                    }
+                }
+            });
+
+            targetGPA = totalCredits === 0 ? 0 : (totalPoints / totalCredits);
+            animateGPAValue();
+            updateBreakdownUI(counts);
+
+            const t = i18n[currentLang];
+            document.getElementById('lbl-total-credits').innerHTML = `${t.totalCredits} <strong style="color:var(--text-primary)">${totalCredits}</strong>`;
+            document.getElementById('lbl-total-points').innerHTML = `${t.totalPoints} <strong style="color:var(--text-primary)">${totalPoints.toFixed(1)}</strong>`;
+        }
+
+        function updateBreakdownUI(counts) {
+            const safeUpdate = (id, count) => {
+                const el = document.getElementById(`count-${id}`);
+                const box = document.getElementById(`box-${id}`);
+                if(el && box) {
+                    el.textContent = count;
+                    if(count > 0) box.classList.add('active');
+                    else box.classList.remove('active');
+                }
+            };
+
+            safeUpdate('4', counts['4']);
+            safeUpdate('3-5', counts['3.5']);
+            safeUpdate('3', counts['3']);
+            safeUpdate('2-5', counts['2.5']);
+            safeUpdate('2', counts['2']);
+            safeUpdate('1-5', counts['1.5']);
+            safeUpdate('1', counts['1']);
+            safeUpdate('0', counts['0']);
+        }
+
+        function animateGPAValue() {
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            const element = document.getElementById('final-gpa');
+            function update() {
+                const diff = targetGPA - currentDisplayedGPA;
+                if (Math.abs(diff) < 0.005) {
+                    currentDisplayedGPA = targetGPA;
+                    element.textContent = currentDisplayedGPA.toFixed(2);
+                    return;
+                }
+                currentDisplayedGPA += diff * 0.15;
+                element.textContent = currentDisplayedGPA.toFixed(2);
+                animationFrameId = requestAnimationFrame(update);
+            }
+            update();
+        }
+    </script>
+</body>
+</html>
